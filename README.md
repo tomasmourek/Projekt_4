@@ -10,27 +10,42 @@ Analyzovat vývoj mezd a cen potravin v České republice a doplnit o makroekono
 | `czechia_payroll_industry_branch` | Číselník odvětví. |
 | `czechia_price` | Ceny vybraných potravin podle let a kategorií. |
 | `czechia_price_category` | Číselník kategorií potravin. |
-| `countries`, `economies` | Mezinárodní makroekonomická data (HDP, GINI, populace aj.). |
+| `countries`, `economies` | Mezinárodní makroekonomická data (HDP, GINI, populace). |
+
+Zdrojové tabulky jsou použity výhradně pro vytvoření finálních tabulek.  
+Veškeré analytické dotazy (Q1–Q5) pracují pouze s tabulkami  
+`t_tomas_mourek_project_SQL_primary_final` a  
+`t_tomas_mourek_project_SQL_secondary_final`, v souladu se zadáním projektu.
 
 ## Výstupní tabulky
 
 ### `t_tomas_mourek_project_SQL_primary_final`
-Zahrnuje spojená data o mzdách a cenách potravin za ČR v období 2006  2018.  
+Zahrnuje spojená data o mzdách a cenách potravin za ČR v období 2006 - 2018
 
 Sloupce:
-- `year`
 - `industry_branch`
-- `avg_salary`
-- `food_category`
-- `avg_price`
-- `quantity`
-- `unit`
+- `year` 
+- `industry_branch_name`  
+- `avg_wage_per_industry`
+- `overall_avg_wage`
+- `price_category_name` 
+- `avg_price_per_category`  
+- `avg_price_milk`  
+- `avg_price_bread`  
+- `milk_liters`  
+- `bread_kg`  
 
 ### `t_tomas_mourek_project_SQL_secondary_final`
-Dodatečná data o evropských zemích z tabulek `countries` a `economies`  
-(rok, země, HDP, GINI, populace).
 
-## Přehled analytických views
+Dodatečná makroekonomická data evropských zemí pro stejné období
+jako primární tabulka.
+
+Sloupce:
+- `country` 
+- `year`
+- `gdp_per_capita`
+- `gini_index` 
+- `population`
 
 ## Analytické views
 

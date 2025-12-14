@@ -1,32 +1,39 @@
 DROP VIEW IF EXISTS v_tomas_mourek_wages_trend CASCADE;
 
 CREATE VIEW v_tomas_mourek_wages_trend AS
-WITH wages AS (
-  SELECT
-    payroll_year AS year,
-    cpib.name AS industry_branch,
-    ROUND(AVG(cp.value)::numeric, 2) AS avg_salary
-  FROM czechia_payroll cp
-  JOIN czechia_payroll_industry_branch cpib
-    ON cp.industry_branch_code = cpib.code
-  WHERE cp.value_type_code = 5958
-    AND cp.calculation_code = 200
-    AND cp.value IS NOT NULL
-  GROUP BY payroll_year, cpib.name
+WITH base AS (
+    SELECT DISTINCT
+        year,
+        industry_branch_name,
+        avg_wage_per_industry
+    FROM t_tomas_mourek_project_sql_primary_final
+    WHERE industry_branch_name IS NOT NULL
 ),
-diff AS (
-  SELECT
-    industry_branch,
-    year,
-    avg_salary,
-    LAG(avg_salary) OVER (PARTITION BY industry_branch ORDER BY year) AS prev_salary
-  FROM wages
+lagged AS (
+    SELECT
+        year,
+        industry_branch_name,
+        avg_wage_per_industry,
+        LAG(avg_wage_per_industry) OVER (
+            PARTITION BY industry_branch_name
+            ORDER BY year
+        ) AS prev_wage
+    FROM base
 )
 SELECT
-  industry_branch,
-  year,
-  ROUND((avg_salary - prev_salary) / NULLIF(prev_salary, 0) * 100, 2) AS yoy_salary_change_pct,
-  CASE WHEN avg_salary > prev_salary THEN 'UP' ELSE 'DOWN' END AS trend
-FROM diff
-WHERE prev_salary IS NOT NULL
-ORDER BY industry_branch, year;
+    industry_branch_name AS industry,
+    year,
+    avg_wage_per_industry AS avg_wage,
+    ROUND(
+        100.0 * (avg_wage_per_industry - prev_wage) / NULLIF(prev_wage, 0),
+        2
+    ) AS yoy_wage_growth_pct,
+    CASE
+        WHEN prev_wage IS NULL THEN NULL
+        WHEN avg_wage_per_industry < prev_wage THEN TRUE
+        ELSE FALSE
+    END AS wage_decrease
+FROM lagged
+ORDER BY
+    industry,
+    year;
